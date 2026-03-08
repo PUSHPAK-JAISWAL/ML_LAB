@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ML Lab · Practicals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+/* ─────────────────────────────────────────────────────────────
+   Tokens & Reset
+───────────────────────────────────────────────────────────── */
+:root{
+  --bg:       #080b12;
+  --bg2:      #0f1320;
+  --bg3:      #171d2e;
+  --border:   #1e2640;
+  --border2:  #2a3352;
+
+  --p:        #5b8dee;    /* primary – electric blue */
+  --p2:       #7ca5f5;
+  --p-glow:   rgba(91,141,238,.25);
+
+  --acc:      #2dd4c0;    /* accent – teal */
+  --acc-glow: rgba(45,212,192,.2);
+
+  --warn:     #f59e42;
+
+  --txt:      #dce6ff;
+  --txt2:     #7e8fb5;
+  --txt3:     #4a567a;
+
+  --radius:   12px;
+  --radius-lg:20px;
+  --trans:    .22s cubic-bezier(.4,0,.2,1);
+
+  --sidebar-w:260px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Outfit",sans-serif;
+  background:var(--bg);
+  color:var(--txt);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Scrollbar
+───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* ─────────────────────────────────────────────────────────────
+   Background mesh
+───────────────────────────────────────────────────────────── */
+#bg-canvas{
+  position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.45;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Layout shell
+───────────────────────────────────────────────────────────── */
+#app{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ─────────────────────────────────────────────────────────────
+   Header
+───────────────────────────────────────────────────────────── */
+header{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;gap:16px;
+  padding:0 28px;height:60px;
+  background:rgba(8,11,18,.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:"JetBrains Mono",monospace;font-weight:700;font-size:.95rem;
+  color:var(--p2);cursor:pointer;user-select:none;flex-shrink:0;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--p),var(--acc));
+  display:grid;place-items:center;font-size:.85rem;
+}
+.breadcrumb{
+  display:flex;align-items:center;gap:6px;
+  font-size:.8rem;color:var(--txt3);overflow:hidden;
+}
+.breadcrumb span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.breadcrumb .sep{color:var(--border2);flex-shrink:0}
+.breadcrumb .crumb{
+  color:var(--txt2);cursor:pointer;
+  transition:color var(--trans);white-space:nowrap;
+}
+.breadcrumb .crumb:hover{color:var(--p2)}
+.breadcrumb .active{color:var(--txt)}
+
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.gh-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:99px;border:1px solid var(--border2);
+  background:transparent;color:var(--txt2);
+  font-family:"Outfit",sans-serif;font-size:.78rem;
+  cursor:pointer;transition:all var(--trans);text-decoration:none;
+}
+.gh-btn:hover{border-color:var(--p);color:var(--p2);background:var(--p-glow)}
+.badge-updated{
+  font-size:.7rem;font-family:"JetBrains Mono",monospace;
+  color:var(--txt3);padding:3px 8px;border-radius:99px;
+  border:1px solid var(--border);background:var(--bg2);
+  white-space:nowrap;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Page wrapper (sidebar + main)
+───────────────────────────────────────────────────────────── */
+#page{flex:1;display:flex;overflow:hidden}
+
+/* ─────────────────────────────────────────────────────────────
+   Sidebar
+───────────────────────────────────────────────────────────── */
+#sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  overflow-y:auto;padding:16px 0;
+  display:none; /* shown on practical view */
+  transition:transform var(--trans);
+}
+#sidebar.visible{display:block;}
+
+.sb-section-label{
+  font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--txt3);padding:12px 18px 6px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 18px;cursor:pointer;border-radius:0;
+  font-size:.82rem;color:var(--txt2);
+  border-left:2px solid transparent;
+  transition:all var(--trans);user-select:none;
+}
+.sb-item:hover{background:var(--bg3);color:var(--txt);border-left-color:var(--border2)}
+.sb-item.active{
+  background:var(--bg3);color:var(--p2);
+  border-left-color:var(--p);
+}
+.sb-item .sb-num{
+  font-family:"JetBrains Mono",monospace;font-size:.72rem;
+  min-width:24px;color:var(--txt3);
+}
+.sb-item.active .sb-num{color:var(--p)}
+.sb-nb-item{
+  padding:7px 18px 7px 46px;
+  font-size:.78rem;color:var(--txt3);cursor:pointer;
+  border-left:2px solid transparent;
+  transition:all var(--trans);
+}
+.sb-nb-item:hover{color:var(--txt2);background:var(--bg3)}
+.sb-nb-item.active{color:var(--acc);border-left-color:var(--acc)}
+
+/* ─────────────────────────────────────────────────────────────
+   Main content
+───────────────────────────────────────────────────────────── */
+#main{flex:1;overflow-y:auto;overflow-x:hidden}
+
+/* ─────────────────────────────────────────────────────────────
+   Views
+───────────────────────────────────────────────────────────── */
+.view{display:none;animation:fadeUp .35s ease both}
+.view.active{display:block}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(18px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+
+/* ─────────────────────────────────────────────────────────────
+   HOME view
+───────────────────────────────────────────────────────────── */
+#view-home{padding:0}
+
+.hero{
+  position:relative;padding:72px 56px 56px;
+  background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(91,141,238,.08) 0%,transparent 70%),
+             radial-gradient(ellipse 60% 50% at 80% 80%,rgba(45,212,192,.06) 0%,transparent 70%);
+  border-bottom:1px solid var(--border);overflow:hidden;
+}
+.hero-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:"JetBrains Mono",monospace;font-size:.72rem;
+  color:var(--acc);background:rgba(45,212,192,.1);border:1px solid rgba(45,212,192,.2);
+  padding:4px 12px;border-radius:99px;margin-bottom:22px;
+  animation:fadeUp .4s .05s ease both;
+}
+.hero-tag::before{content:"●";animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{
+  font-size:clamp(2.2rem,4vw,3.4rem);font-weight:800;line-height:1.1;
+  letter-spacing:-.02em;
+  background:linear-gradient(135deg,var(--txt) 0%,var(--p2) 50%,var(--acc) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:fadeUp .4s .1s ease both;
+  margin-bottom:16px;
+}
+.hero-sub{
+  font-size:1rem;color:var(--txt2);max-width:540px;line-height:1.7;
+  animation:fadeUp .4s .15s ease both;margin-bottom:32px;
+}
+.hero-stats{
+  display:flex;flex-wrap:wrap;gap:24px;
+  animation:fadeUp .4s .2s ease both;
+}
+.stat{display:flex;flex-direction:column}
+.stat-val{
+  font-family:"JetBrains Mono",monospace;font-size:1.5rem;font-weight:700;
+  color:var(--p2);line-height:1;
+}
+.stat-label{font-size:.72rem;color:var(--txt3);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+
+.hero-deco{
+  position:absolute;right:-40px;top:-40px;width:360px;height:360px;
+  background:radial-gradient(circle,rgba(91,141,238,.12) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;
+}
+
+/* Syllabus cards */
+.syllabus-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:24px;padding:48px 56px;
+}
+.syl-card{
+  position:relative;overflow:hidden;cursor:pointer;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:32px;
+  transition:all .3s ease;
+  animation:fadeUp .4s ease both;
+}
+.syl-card:nth-child(1){animation-delay:.1s}
+.syl-card:nth-child(2){animation-delay:.18s}
+.syl-card:hover{
+  border-color:var(--p);
+  transform:translateY(-4px);
+  box-shadow:0 20px 60px rgba(0,0,0,.4), 0 0 0 1px var(--p), inset 0 1px 0 rgba(255,255,255,.05);
+}
+.syl-card:hover .syl-arrow{transform:translate(4px,-4px);color:var(--p2)}
+.syl-card-glow{
+  position:absolute;top:-60px;right:-60px;width:220px;height:220px;
+  border-radius:50%;filter:blur(60px);opacity:0;
+  transition:opacity .4s ease;pointer-events:none;
+}
+.syl-card:hover .syl-card-glow{opacity:1}
+.syl-card.new .syl-card-glow{background:var(--p)}
+.syl-card.old .syl-card-glow{background:var(--acc)}
+
+.syl-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:grid;place-items:center;font-size:1.4rem;
+  margin-bottom:20px;
+}
+.syl-card.new .syl-icon{background:rgba(91,141,238,.15);border:1px solid rgba(91,141,238,.3)}
+.syl-card.old .syl-icon{background:rgba(45,212,192,.12);border:1px solid rgba(45,212,192,.25)}
+
+.syl-arrow{
+  position:absolute;top:24px;right:24px;font-size:1.2rem;
+  color:var(--txt3);transition:all var(--trans);
+}
+.syl-card h2{font-size:1.4rem;font-weight:700;margin-bottom:8px}
+.syl-card p{font-size:.85rem;color:var(--txt2);margin-bottom:20px;line-height:1.6}
+.syl-meta{
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.syl-chip{
+  font-family:"JetBrains Mono",monospace;font-size:.7rem;
+  padding:3px 10px;border-radius:99px;font-weight:500;
+}
+.syl-card.new .syl-chip{background:rgba(91,141,238,.15);color:var(--p2);border:1px solid rgba(91,141,238,.2)}
+.syl-card.old .syl-chip{background:rgba(45,212,192,.1);color:var(--acc);border:1px solid rgba(45,212,192,.2)}
+
+/* syllabus.md preview */
+#syllabus-preview{
+  margin:0 56px 48px;
+  border-radius:var(--radius-lg);border:1px solid var(--border);
+  background:var(--bg2);overflow:hidden;
+  animation:fadeUp .4s .28s ease both;
+}
+#syllabus-preview summary{
+  padding:18px 24px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  font-weight:600;font-size:.9rem;color:var(--txt2);
+  user-select:none;list-style:none;
+  transition:color var(--trans);
+}
+#syllabus-preview summary:hover{color:var(--txt)}
+#syllabus-preview summary::marker{display:none}
+#syllabus-preview summary .arrow{
+  margin-left:auto;color:var(--txt3);transition:transform var(--trans);
+}
+#syllabus-preview[open] summary .arrow{transform:rotate(180deg)}
+#syllabus-content{
+  padding:0 24px 24px;
+  font-size:.85rem;color:var(--txt2);line-height:1.8;
+  border-top:1px solid var(--border);padding-top:20px;
+  max-height:340px;overflow-y:auto;
+}
+#syllabus-content h1,#syllabus-content h2,#syllabus-content h3{
+  color:var(--txt);font-size:1rem;margin-bottom:8px;margin-top:16px;
+}
+#syllabus-content code{
+  font-family:"JetBrains Mono",monospace;font-size:.78rem;
+  background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--acc);
+}
+#syllabus-content ul,#syllabus-content ol{padding-left:20px}
+#syllabus-content li{margin-bottom:4px}
+
+/* ─────────────────────────────────────────────────────────────
+   SYLLABUS view
+───────────────────────────────────────────────────────────── */
+#view-syllabus{padding:48px 56px}
+
+.section-header{
+  display:flex;align-items:center;gap:14px;margin-bottom:36px;
+}
+.section-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:grid;place-items:center;font-size:1.2rem;flex-shrink:0;
+}
+.section-header h2{font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
+.section-header p{font-size:.85rem;color:var(--txt2);margin-top:4px}
+
+.practicals-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:16px;
+}
+.prac-card{
+  position:relative;cursor:pointer;overflow:hidden;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:22px;
+  transition:all .25s ease;
+  animation:fadeUp .3s ease both;
+}
+.prac-card:hover{
+  border-color:var(--p);
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(0,0,0,.35), 0 0 0 1px var(--p);
+}
+.prac-num{
+  font-family:"JetBrains Mono",monospace;font-size:.7rem;font-weight:700;
+  color:var(--txt3);text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:10px;
+}
+.prac-title{font-size:1rem;font-weight:600;margin-bottom:8px;color:var(--txt)}
+.prac-sub{
+  font-size:.75rem;color:var(--txt3);
+  font-family:"JetBrains Mono",monospace;
+}
+.prac-count{
+  position:absolute;top:16px;right:16px;
+  font-family:"JetBrains Mono",monospace;font-size:.68rem;
+  color:var(--p2);background:rgba(91,141,238,.12);
+  border:1px solid rgba(91,141,238,.2);border-radius:99px;
+  padding:2px 8px;
+}
+.prac-bar{
+  margin-top:14px;height:2px;border-radius:99px;
+  background:linear-gradient(90deg,var(--p),var(--acc));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .35s ease;
+}
+.prac-card:hover .prac-bar{transform:scaleX(1)}
+
+/* ─────────────────────────────────────────────────────────────
+   PRACTICAL view
+───────────────────────────────────────────────────────────── */
+#view-practical{display:flex;flex-direction:column;height:calc(100vh - 60px)}
+
+.practical-topbar{
+  padding:16px 28px;border-bottom:1px solid var(--border);
+  background:var(--bg2);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.practical-topbar h3{font-size:1rem;font-weight:700;flex:1;min-width:120px}
+.dl-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 16px;border-radius:8px;
+  font-family:"Outfit",sans-serif;font-size:.78rem;font-weight:500;
+  cursor:pointer;border:1px solid;transition:all var(--trans);
+  text-decoration:none;
+}
+.dl-btn.ipynb{
+  border-color:rgba(91,141,238,.4);color:var(--p2);background:rgba(91,141,238,.08);
+}
+.dl-btn.ipynb:hover{background:rgba(91,141,238,.18);border-color:var(--p2)}
+.dl-btn.pdf{
+  border-color:rgba(245,158,66,.35);color:var(--warn);background:rgba(245,158,66,.07);
+}
+.dl-btn.pdf:hover{background:rgba(245,158,66,.15);border-color:var(--warn)}
+
+/* notebook tab switcher */
+.nb-tabs{
+  display:flex;gap:4px;padding:10px 28px 0;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  overflow-x:auto;
+}
+.nb-tab{
+  padding:9px 18px;border-radius:8px 8px 0 0;
+  font-size:.8rem;cursor:pointer;
+  color:var(--txt3);border:1px solid transparent;border-bottom:none;
+  transition:all var(--trans);white-space:nowrap;
+}
+.nb-tab:hover{color:var(--txt2);background:var(--bg3)}
+.nb-tab.active{
+  color:var(--p2);background:var(--bg);
+  border-color:var(--border);
+  margin-bottom:-1px;
+}
+.nb-tab .nb-dot{
+  display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--acc);margin-right:6px;vertical-align:middle;
+}
+
+/* iframe container */
+.nb-viewer{flex:1;position:relative;background:var(--bg)}
+.nb-viewer iframe{
+  width:100%;height:100%;border:none;
+  display:block;
+}
+.nb-placeholder{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:16px;color:var(--txt3);
+}
+.nb-placeholder .icon{font-size:3rem;opacity:.4}
+.nb-placeholder p{font-size:.9rem}
+
+/* loading overlay */
+#loader{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .4s ease;
+}
+#loader.hidden{opacity:0;pointer-events:none}
+.loader-logo{
+  font-family:"JetBrains Mono",monospace;font-size:1.8rem;font-weight:700;
+  background:linear-gradient(135deg,var(--p2),var(--acc));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.loader-bar{
+  width:220px;height:3px;border-radius:99px;background:var(--bg3);overflow:hidden;
+}
+.loader-bar-inner{
+  height:100%;border-radius:99px;width:0;
+  background:linear-gradient(90deg,var(--p),var(--acc));
+  animation:load 1.4s cubic-bezier(.4,0,.2,1) forwards;
+}
+@keyframes load{to{width:100%}}
+.loader-txt{font-size:.75rem;color:var(--txt3);font-family:"JetBrains Mono",monospace}
+
+/* ─────────────────────────────────────────────────────────────
+   Empty / error states
+───────────────────────────────────────────────────────────── */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:80px 40px;gap:12px;text-align:center;
+}
+.empty-state .icon{font-size:2.5rem;opacity:.3}
+.empty-state p{color:var(--txt3);font-size:.9rem}
+
+/* ─────────────────────────────────────────────────────────────
+   Responsive
+───────────────────────────────────────────────────────────── */
+@media(max-width:700px){
+  .hero{padding:48px 24px 40px}
+  .syllabus-grid{padding:32px 24px;grid-template-columns:1fr}
+  #syllabus-preview{margin:0 24px 32px}
+  #view-syllabus{padding:32px 24px}
+  #sidebar{display:none!important}
+  .section-header h2{font-size:1.3rem}
+  header{padding:0 16px}
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Print (PDF via browser)
+───────────────────────────────────────────────────────────── */
+@media print{
+  #loader,header,#sidebar,.practical-topbar,.nb-tabs{display:none!important}
+  .nb-viewer iframe{height:100vh}
+}
+</style>
+</head>
+
+<body>
+
+<!-- Loading overlay -->
+<div id="loader">
+  <div class="loader-logo">ML·LAB</div>
+  <div class="loader-bar"><div class="loader-bar-inner"></div></div>
+  <div class="loader-txt">Loading practicals…</div>
+</div>
+
+<!-- Background canvas -->
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+  <!-- Header -->
+  <header>
+    <div class="logo" onclick="goHome()">
+      <div class="logo-icon">⚗</div>
+      <span>ML Lab</span>
+    </div>
+    <nav class="breadcrumb" id="breadcrumb">
+      <span class="crumb active" onclick="goHome()">Home</span>
+    </nav>
+    <div class="header-right">
+      <span class="badge-updated" id="updated-badge">—</span>
+      <a class="gh-btn" id="gh-link" href="#" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+            0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01
+            1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+            0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68
+            0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15
+            0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38
+            A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </header>
+
+  <!-- Page -->
+  <div id="page">
+    <!-- Sidebar -->
+    <nav id="sidebar"></nav>
+
+    <!-- Main -->
+    <main id="main">
+
+      <!-- HOME VIEW -->
+      <section class="view active" id="view-home">
+        <div class="hero">
+          <div class="hero-deco"></div>
+          <div class="hero-tag">🧪 Machine Learning Laboratory</div>
+          <h1>Practical<br>Notebooks</h1>
+          <p class="hero-sub">
+            Browse, explore, and download all ML lab practicals.
+            Each notebook is rendered with full outputs — ready to study or reference.
+          </p>
+          <div class="hero-stats" id="hero-stats"></div>
+        </div>
+
+        <div class="syllabus-grid" id="syllabus-cards"></div>
+
+        <details id="syllabus-preview" style="display:none">
+          <summary>
+            <span>📄</span>
+            <span>Syllabus Overview</span>
+            <span class="arrow">▾</span>
+          </summary>
+          <div id="syllabus-content"></div>
+        </details>
+      </section>
+
+      <!-- SYLLABUS VIEW -->
+      <section class="view" id="view-syllabus">
+        <div class="section-header">
+          <div class="section-icon" id="syl-icon"></div>
+          <div>
+            <h2 id="syl-title">Syllabus</h2>
+            <p id="syl-desc"></p>
+          </div>
+        </div>
+        <div class="practicals-grid" id="practicals-grid"></div>
+      </section>
+
+      <!-- PRACTICAL VIEW -->
+      <section class="view" id="view-practical">
+        <div class="practical-topbar">
+          <h3 id="prac-title">Practical</h3>
+          <div id="prac-actions"></div>
+        </div>
+        <div class="nb-tabs" id="nb-tabs"></div>
+        <div class="nb-viewer" id="nb-viewer">
+          <div class="nb-placeholder">
+            <div class="icon">📓</div>
+            <p>Select a notebook from the tabs above</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   State & data
+═══════════════════════════════════════════════════════════════ */
+let MANIFEST = null;
+let STATE = { view: "home", syllabus: null, practical: null, notebook: null };
+
+const GITHUB_REPO = (() => {
+  try {
+    const p = window.location.pathname.split("/");
+    return p.length >= 2 ? `https://github.com/${p[1]}/${p[2] || ""}` : "#";
+  } catch { return "#"; }
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   Background canvas (dot grid + floating orbs)
+═══════════════════════════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById("bg-canvas");
+  const ctx = canvas.getContext("2d");
+  let W, H, orbs = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function makeOrbs() {
+    orbs = Array.from({ length: 4 }, (_, i) => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: 160 + Math.random() * 200,
+      vx: (Math.random() - .5) * .25,
+      vy: (Math.random() - .5) * .25,
+      hue: [220, 180, 260, 200][i],
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // dot grid
+    ctx.fillStyle = "rgba(255,255,255,.025)";
+    const step = 36;
+    for (let x = 0; x < W; x += step)
+      for (let y = 0; y < H; y += step) {
+        ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI * 2); ctx.fill();
+      }
+
+    // orbs
+    orbs.forEach(o => {
+      o.x += o.vx; o.y += o.vy;
+      if (o.x < -o.r) o.x = W + o.r;
+      if (o.x > W + o.r) o.x = -o.r;
+      if (o.y < -o.r) o.y = H + o.r;
+      if (o.y > H + o.r) o.y = -o.r;
+
+      const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+      g.addColorStop(0, `hsla(${o.hue},70%,60%,.07)`);
+      g.addColorStop(1, "transparent");
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  resize(); makeOrbs(); draw();
+  window.addEventListener("resize", () => { resize(); makeOrbs(); });
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   Init
+═══════════════════════════════════════════════════════════════ */
+async function init() {
+  document.getElementById("gh-link").href = GITHUB_REPO;
+  try {
+    const r = await fetch("manifest.json?" + Date.now());
+    MANIFEST = await r.json();
+    renderHome();
+  } catch (e) {
+    document.getElementById("main").innerHTML =
+      `<div class="empty-state"><div class="icon">⚠️</div>
+       <p>Could not load manifest.json</p>
+       <p style="font-size:.75rem;color:#4a567a">${e.message}</p></div>`;
+  } finally {
+    const loader = document.getElementById("loader");
+    loader.classList.add("hidden");
+    setTimeout(() => loader.remove(), 600);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Router helpers
+═══════════════════════════════════════════════════════════════ */
+function showView(id) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  const el = document.getElementById("view-" + id);
+  el.classList.add("active");
+  document.getElementById("main").scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function setBreadcrumb(parts) {
+  const bc = document.getElementById("breadcrumb");
+  bc.innerHTML = parts.map((p, i) => {
+    const isLast = i === parts.length - 1;
+    if (i === 0) return `<span class="crumb ${isLast ? 'active' : ''}" onclick="${p.action}">${p.label}</span>`;
+    return `<span class="sep">›</span>
+            <span class="crumb ${isLast ? 'active' : ''}" onclick="${p.action}">${p.label}</span>`;
+  }).join("");
+}
+
+function toggleSidebar(show) {
+  document.getElementById("sidebar").classList.toggle("visible", show);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════════════════════════ */
+function goHome() {
+  STATE = { view: "home", syllabus: null, practical: null, notebook: null };
+  setBreadcrumb([{ label: "Home", action: "goHome()" }]);
+  toggleSidebar(false);
+  showView("home");
+}
+
+function renderHome() {
+  const m = MANIFEST;
+  // updated badge
+  if (m.updated) document.getElementById("updated-badge").textContent = m.updated;
+
+  // hero stats
+  const syllabi = Object.values(m.syllabi);
+  const totalP  = syllabi.reduce((a, s) => a + s.practicals.length, 0);
+  const totalNB = syllabi.reduce((a, s) => a + s.practicals.reduce((b, p) => b + p.count, 0), 0);
+  document.getElementById("hero-stats").innerHTML = `
+    <div class="stat"><span class="stat-val">${syllabi.length}</span><span class="stat-label">Syllabi</span></div>
+    <div class="stat"><span class="stat-val">${totalP}</span><span class="stat-label">Practicals</span></div>
+    <div class="stat"><span class="stat-val">${totalNB}</span><span class="stat-label">Notebooks</span></div>
+  `;
+
+  // syllabus cards
+  const icons   = { new_syllabus: "🔬", old_syllabus: "📂" };
+  const classes  = { new_syllabus: "new", old_syllabus: "old" };
+  document.getElementById("syllabus-cards").innerHTML =
+    Object.entries(m.syllabi).map(([key, s]) => `
+      <div class="syl-card ${classes[key] || ''}" onclick="openSyllabus('${key}')">
+        <div class="syl-card-glow"></div>
+        <div class="syl-arrow">↗</div>
+        <div class="syl-icon">${icons[key] || "📁"}</div>
+        <h2>${s.title}</h2>
+        <p>${s.description || ""}</p>
+        <div class="syl-meta">
+          <span class="syl-chip">${s.practicals.length} practicals</span>
+          <span class="syl-chip">${s.practicals.reduce((a, p) => a + p.count, 0)} notebooks</span>
+        </div>
+      </div>
+    `).join("");
+
+  // syllabus.md
+  if (m.syllabus_md) {
+    document.getElementById("syllabus-preview").style.display = "block";
+    document.getElementById("syllabus-content").innerHTML = md2html(m.syllabus_md);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SYLLABUS
+═══════════════════════════════════════════════════════════════ */
+function openSyllabus(key) {
+  STATE.syllabus = key;
+  STATE.view = "syllabus";
+  const s = MANIFEST.syllabi[key];
+
+  setBreadcrumb([
+    { label: "Home",    action: "goHome()" },
+    { label: s.title,   action: `openSyllabus('${key}')` },
+  ]);
+  toggleSidebar(false);
+
+  const icons = { new_syllabus: "🔬", old_syllabus: "📂" };
+  const colors= { new_syllabus: "rgba(91,141,238,.15)", old_syllabus: "rgba(45,212,192,.12)" };
+  document.getElementById("syl-icon").innerHTML = icons[key] || "📁";
+  document.getElementById("syl-icon").style.background = colors[key] || "var(--bg3)";
+  document.getElementById("syl-title").textContent = s.title;
+  document.getElementById("syl-desc").textContent  = s.description || "";
+
+  document.getElementById("practicals-grid").innerHTML =
+    s.practicals.map((p, i) => `
+      <div class="prac-card" style="animation-delay:${i * .045}s"
+           onclick="openPractical('${key}', '${p.id}')">
+        <div class="prac-count">${p.count} nb</div>
+        <div class="prac-num">${s.title} / ${p.id}</div>
+        <div class="prac-title">${p.title}</div>
+        <div class="prac-sub">${p.notebooks.map(n => n.name).join("  ·  ")}</div>
+        <div class="prac-bar"></div>
+      </div>
+    `).join("");
+
+  showView("syllabus");
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PRACTICAL
+═══════════════════════════════════════════════════════════════ */
+function openPractical(sylKey, pracId, nbName) {
+  STATE.syllabus  = sylKey;
+  STATE.practical = pracId;
+  STATE.view      = "practical";
+
+  const s   = MANIFEST.syllabi[sylKey];
+  const p   = s.practicals.find(x => x.id === pracId);
+  if (!p) return;
+
+  const activeNb = nbName || (p.notebooks[0] && p.notebooks[0].name);
+  STATE.notebook  = activeNb;
+
+  setBreadcrumb([
+    { label: "Home",    action: "goHome()" },
+    { label: s.title,   action: `openSyllabus('${sylKey}')` },
+    { label: p.title,   action: `openPractical('${sylKey}','${pracId}')` },
+  ]);
+
+  // Sidebar
+  renderSidebar(sylKey, pracId);
+  toggleSidebar(true);
+
+  // Title
+  document.getElementById("prac-title").textContent = `${s.title} › ${p.title}`;
+
+  // Download buttons
+  const nbObj = p.notebooks.find(n => n.name === activeNb) || p.notebooks[0];
+  renderActions(nbObj);
+
+  // Tabs
+  const tabs = document.getElementById("nb-tabs");
+  tabs.innerHTML = p.notebooks.map(nb => `
+    <div class="nb-tab ${nb.name === activeNb ? 'active' : ''}"
+         onclick="switchNotebook('${sylKey}','${pracId}','${nb.name}')">
+      <span class="nb-dot"></span>${nb.label || nb.name}
+    </div>
+  `).join("");
+
+  // Viewer
+  loadNotebook(nbObj);
+  showView("practical");
+}
+
+function switchNotebook(sylKey, pracId, nbName) {
+  STATE.notebook = nbName;
+  const s  = MANIFEST.syllabi[sylKey];
+  const p  = s.practicals.find(x => x.id === pracId);
+  const nb = p.notebooks.find(n => n.name === nbName);
+  if (!nb) return;
+
+  // update active tab
+  document.querySelectorAll(".nb-tab").forEach((t, i) =>
+    t.classList.toggle("active", p.notebooks[i].name === nbName));
+
+  renderActions(nb);
+  loadNotebook(nb);
+
+  // update sidebar active
+  document.querySelectorAll(".sb-nb-item").forEach(el => {
+    el.classList.toggle("active", el.dataset.nb === nbName);
+  });
+}
+
+function renderActions(nb) {
+  if (!nb) return;
+  const acts = document.getElementById("prac-actions");
+  acts.innerHTML = `
+    <a class="dl-btn ipynb" href="${nb.ipynb}" download>
+      ⬇ Download .ipynb
+    </a>
+    <button class="dl-btn pdf" onclick="printNb()">🖨 Print / PDF</button>
+  `;
+}
+
+function loadNotebook(nb) {
+  const viewer = document.getElementById("nb-viewer");
+  if (!nb || !nb.html) {
+    viewer.innerHTML = `
+      <div class="nb-placeholder">
+        <div class="icon">📓</div>
+        <p>Notebook HTML not available (conversion may have failed).</p>
+        ${nb ? `<a class="dl-btn ipynb" href="${nb.ipynb}" download style="margin-top:8px">⬇ Download .ipynb</a>` : ""}
+      </div>`;
+    return;
+  }
+  viewer.innerHTML = `
+    <iframe id="nb-frame" src="${nb.html}"
+      sandbox="allow-scripts allow-same-origin"
+      title="Notebook viewer">
+    </iframe>`;
+
+  // inject dark bg into iframe once loaded
+  const frame = document.getElementById("nb-frame");
+  frame.addEventListener("load", () => {
+    try {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      const s = doc.createElement("style");
+      s.textContent = `
+        body { background:#0d1117 !important; color:#c9d1d9 !important; }
+        .jp-Cell { background:#161b22 !important; }
+        .jp-OutputArea-output { background:#0d1117 !important; }
+      `;
+      doc.head.appendChild(s);
+    } catch {}
+  });
+}
+
+function printNb() {
+  const frame = document.getElementById("nb-frame");
+  if (frame) { frame.contentWindow.print(); }
+  else { window.print(); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Sidebar
+═══════════════════════════════════════════════════════════════ */
+function renderSidebar(sylKey, activePracId) {
+  const sb = document.getElementById("sidebar");
+  const s  = MANIFEST.syllabi[sylKey];
+
+  sb.innerHTML = `<div class="sb-section-label">${s.title}</div>` +
+    s.practicals.map(p => `
+      <div class="sb-item ${p.id === activePracId ? 'active' : ''}"
+           onclick="openPractical('${sylKey}','${p.id}')">
+        <span class="sb-num">${p.id.replace(/[^0-9]/g, "")}</span>
+        ${p.title}
+      </div>
+      ${p.id === activePracId ? p.notebooks.map(nb => `
+        <div class="sb-nb-item ${nb.name === STATE.notebook ? 'active' : ''}"
+             data-nb="${nb.name}"
+             onclick="switchNotebook('${sylKey}','${p.id}','${nb.name}')">
+          ${nb.label || nb.name}
+        </div>`).join("") : ""}
+    `).join("");
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Simple Markdown → HTML
+═══════════════════════════════════════════════════════════════ */
+function md2html(md) {
+  return md
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/^### (.+)/gm,"<h3>$1</h3>")
+    .replace(/^## (.+)/gm,"<h2>$1</h2>")
+    .replace(/^# (.+)/gm,"<h1>$1</h1>")
+    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g,"<em>$1</em>")
+    .replace(/`(.+?)`/g,"<code>$1</code>")
+    .replace(/^- (.+)/gm,"<li>$1</li>")
+    .replace(/(<li>.*<\/li>)/s,"<ul>$1</ul>")
+    .replace(/\n\n/g,"</p><p>")
+    .replace(/^(?!<[h|u|o|l])/gm, "");
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Keyboard nav
+═══════════════════════════════════════════════════════════════ */
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && STATE.view !== "home") {
+    if (STATE.view === "practical") openSyllabus(STATE.syllabus);
+    else goHome();
+  }
+});
+
+/* ── Bootstrap ── */
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+nbconvert>=7.0
+nbformat>=5.0
+jupyter-core
+jinja2
+traitlets
+pygments

@@ -51,7 +51,12 @@ jobs:
       - name: 🔨  Build site
         run: python scripts/build_site.py
 
-      # 6 ── upload artifact ──────────────────────────────────────────────────
+      # 6 ── disable Jekyll (CRITICAL: prevents GitHub Pages from ignoring
+      #      files/folders that start with _ or . ) ───────────────────────────
+      - name: 🚫  Add .nojekyll
+        run: touch _site/.nojekyll
+
+      # 7 ── upload artifact ──────────────────────────────────────────────────
       - name: 📤  Upload site artifact
         uses: actions/upload-artifact@v4
         with:
@@ -59,7 +64,7 @@ jobs:
           path: _site/
           retention-days: 7
 
-      # 7 ── deploy to gh-pages ───────────────────────────────────────────────
+      # 8 ── deploy to gh-pages ───────────────────────────────────────────────
       - name: 🚀  Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -67,6 +72,7 @@ jobs:
           publish_dir: ./_site
           publish_branch: gh-pages
           force_orphan: true
+          enable_jekyll: false
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
           commit_message: |

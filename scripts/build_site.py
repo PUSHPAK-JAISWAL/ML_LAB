@@ -27,7 +27,7 @@ def nb_to_html(nb_path: Path, out_dir: Path) -> bool:
         "jupyter", "nbconvert", "--to", "html",
         "--output", nb_path.stem + ".html",
         "--output-dir", str(out_dir),
-        "--HTMLExporter.theme=dark",
+        "--HTMLExporter.theme=light",
         str(nb_path),
     ]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=180)

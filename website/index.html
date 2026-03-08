@@ -605,12 +605,7 @@ header{
 let MANIFEST = null;
 let STATE = { view: "home", syllabus: null, practical: null, notebook: null };
 
-const GITHUB_REPO = (() => {
-  try {
-    const p = window.location.pathname.split("/");
-    return p.length >= 2 ? `https://github.com/${p[1]}/${p[2] || ""}` : "#";
-  } catch { return "#"; }
-})();
+const GITHUB_REPO = "https://github.com/PUSHPAK-JAISWAL/ML_LAB";
 
 /* ═══════════════════════════════════════════════════════════════
    Background canvas (dot grid + floating orbs)
@@ -891,7 +886,7 @@ function loadNotebook(nb) {
   }
   viewer.innerHTML = `
     <iframe id="nb-frame" src="${nb.html}"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-same-origin allow-modals allow-popups allow-popups-to-escape-sandbox"
       title="Notebook viewer">
     </iframe>`;
 
@@ -913,9 +908,32 @@ function loadNotebook(nb) {
 }
 
 function printNb() {
+  // Open the notebook HTML in a new tab and trigger print there.
+  // This avoids the iframe sandbox restriction on print dialogs.
   const frame = document.getElementById("nb-frame");
-  if (frame) { frame.contentWindow.print(); }
-  else { window.print(); }
+  if (frame && frame.src) {
+    const win = window.open(frame.src, "_blank");
+    if (win) {
+      win.addEventListener("load", () => {
+        // inject print-friendly light styles then print
+        const s = win.document.createElement("style");
+        s.textContent = `
+          @media print {
+            body { background: #fff !important; color: #000 !important; }
+            .jp-Cell { background: #fff !important; border: 1px solid #ddd !important; margin-bottom: 12px !important; }
+            .jp-OutputArea-output { background: #fff !important; }
+            pre, code { font-size: 11px !important; }
+          }
+        `;
+        win.document.head.appendChild(s);
+        setTimeout(() => win.print(), 400);
+      });
+    } else {
+      alert("Pop-up blocked. Please allow pop-ups for this site to use Print/PDF.");
+    }
+  } else {
+    window.print();
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -605,7 +605,7 @@ header{
 let MANIFEST = null;
 let STATE = { view: "home", syllabus: null, practical: null, notebook: null };
 
-const GITHUB_REPO = "https://github.com/PUSHPAK-JAISWAL/ML_LAB.git";
+const GITHUB_REPO = "https://github.com/PUSHPAK-JAISWAL/ML_LAB";
 
 /* ═══════════════════════════════════════════════════════════════
    Background canvas (dot grid + floating orbs)
@@ -908,32 +908,134 @@ function loadNotebook(nb) {
 }
 
 function printNb() {
-  // Open the notebook HTML in a new tab and trigger print there.
-  // This avoids the iframe sandbox restriction on print dialogs.
   const frame = document.getElementById("nb-frame");
-  if (frame && frame.src) {
-    const win = window.open(frame.src, "_blank");
-    if (win) {
-      win.addEventListener("load", () => {
-        // inject print-friendly light styles then print
-        const s = win.document.createElement("style");
-        s.textContent = `
-          @media print {
-            body { background: #fff !important; color: #000 !important; }
-            .jp-Cell { background: #fff !important; border: 1px solid #ddd !important; margin-bottom: 12px !important; }
-            .jp-OutputArea-output { background: #fff !important; }
-            pre, code { font-size: 11px !important; }
-          }
-        `;
-        win.document.head.appendChild(s);
-        setTimeout(() => win.print(), 400);
-      });
-    } else {
-      alert("Pop-up blocked. Please allow pop-ups for this site to use Print/PDF.");
-    }
-  } else {
-    window.print();
-  }
+  if (!frame || !frame.src) { window.print(); return; }
+
+  const win = window.open(frame.src, "_blank");
+  if (!win) { alert("Pop-up blocked. Please allow pop-ups for this site to use Print/PDF."); return; }
+
+  win.addEventListener("load", () => {
+    // Inject a full light-mode stylesheet that overrides ALL dark theme styles.
+    // Covers both classic nbconvert output and JupyterLab HTML exports.
+    const s = win.document.createElement("style");
+    s.textContent = `
+      /* ── Force everything to light mode ── */
+      *, *::before, *::after {
+        color: #000 !important;
+        background: #fff !important;
+        border-color: #ddd !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      /* ── Page setup ── */
+      html, body {
+        background: #fff !important;
+        color: #000 !important;
+        font-family: "Helvetica Neue", Arial, sans-serif !important;
+        font-size: 13px !important;
+        line-height: 1.6 !important;
+        margin: 0 !important;
+        padding: 16px !important;
+      }
+
+      /* ── Hide navbar, toolbar, prompts ── */
+      #notebook-container, .container { max-width: 100% !important; padding: 0 !important; }
+      .navbar, .header, .celltoolbar,
+      .jp-Toolbar, .jp-NotebookPanel-toolbar,
+      .jp-Cell-inputCollapser, .jp-Cell-outputCollapser,
+      .jp-InputPlaceholder, .jp-OutputPlaceholder,
+      .input_prompt, .output_prompt,
+      .jp-InputArea-prompt, .jp-OutputArea-prompt { display: none !important; }
+
+      /* ── Cells ── */
+      .cell, .jp-Cell {
+        background: #fff !important;
+        border: 1px solid #e0e0e0 !important;
+        border-radius: 4px !important;
+        margin-bottom: 12px !important;
+        padding: 10px 14px !important;
+        page-break-inside: avoid;
+      }
+
+      /* ── Code cells ── */
+      .input_area, .jp-InputArea-editor,
+      .CodeMirror, .CodeMirror-scroll,
+      .cm-editor, .cm-scroller {
+        background: #f7f7f7 !important;
+        color: #000 !important;
+        border: none !important;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
+        font-size: 12px !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+      }
+
+      /* ── CodeMirror syntax tokens → all black for print ── */
+      .cm-keyword, .cm-operator, .cm-variable, .cm-def,
+      .cm-string, .cm-number, .cm-comment, .cm-builtin,
+      .cm-attribute, .cm-tag, .cm-link,
+      .cm-s-ipython span { color: #000 !important; }
+
+      /* ── Output areas ── */
+      .output, .output_area, .jp-OutputArea,
+      .jp-OutputArea-output, .output_subarea,
+      .jp-RenderedText, .jp-RenderedHTML,
+      .jp-RenderedMarkdown, .jp-RenderedLatex {
+        background: #fff !important;
+        color: #000 !important;
+        border: none !important;
+        padding: 6px 0 !important;
+        font-size: 13px !important;
+      }
+
+      /* ── Markdown cells ── */
+      .text_cell_render, .jp-MarkdownOutput,
+      .jp-RenderedHTMLCommon {
+        background: #fff !important;
+        color: #000 !important;
+        padding: 4px 0 !important;
+      }
+      .text_cell_render h1, .jp-RenderedHTMLCommon h1 { font-size: 22px !important; border-bottom: 2px solid #ccc !important; padding-bottom: 4px !important; }
+      .text_cell_render h2, .jp-RenderedHTMLCommon h2 { font-size: 18px !important; border-bottom: 1px solid #eee !important; }
+      .text_cell_render h3, .jp-RenderedHTMLCommon h3 { font-size: 15px !important; }
+      .text_cell_render p,  .jp-RenderedHTMLCommon p  { color: #000 !important; }
+      .text_cell_render code, .jp-RenderedHTMLCommon code {
+        background: #f0f0f0 !important; color: #c7254e !important;
+        padding: 1px 4px !important; border-radius: 3px !important;
+        font-size: 11px !important;
+      }
+      .text_cell_render pre, .jp-RenderedHTMLCommon pre {
+        background: #f7f7f7 !important; border: 1px solid #ddd !important;
+        padding: 8px !important; border-radius: 4px !important;
+      }
+      .text_cell_render a, .jp-RenderedHTMLCommon a { color: #0066cc !important; }
+
+      /* ── Tables ── */
+      table { border-collapse: collapse !important; width: 100% !important; }
+      th, td { border: 1px solid #ccc !important; padding: 6px 10px !important; background: #fff !important; color: #000 !important; }
+      th { background: #f5f5f5 !important; font-weight: bold !important; }
+      tr:nth-child(even) td { background: #fafafa !important; }
+
+      /* ── Images / plots ── */
+      img, svg { max-width: 100% !important; height: auto !important; }
+
+      /* ── Stderr / warnings ── */
+      .output_stderr, .jp-OutputArea-output[data-mime-type="application/vnd.jupyter.stderr"] {
+        background: #fff8e1 !important; border-left: 3px solid #f0ad4e !important;
+        color: #856404 !important; padding: 6px !important;
+      }
+
+      /* ── Page breaks ── */
+      .jp-Cell, .cell { page-break-inside: avoid; }
+      h1, h2, h3 { page-break-after: avoid; }
+
+      @page { margin: 18mm 15mm; size: A4; }
+    `;
+    win.document.head.appendChild(s);
+    // Small delay lets fonts/images settle before the print dialog opens
+    setTimeout(() => win.print(), 600);
+  });
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,256 @@
+{
+  "updated": "12 Mar 2026, 10:08 UTC",
+  "syllabi": {
+    "new_syllabus": {
+      "title": "New Syllabus",
+      "description": "Latest curriculum with updated practicals",
+      "practicals": [
+        {
+          "id": "practical1",
+          "title": "Practical 1",
+          "notebooks": [
+            {
+              "name": "practical1",
+              "label": "Practical 1",
+              "html": "new_syllabus/practical1/practical1.html",
+              "ipynb": "new_syllabus/practical1/practical1.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical10",
+          "title": "Practical 10",
+          "notebooks": [
+            {
+              "name": "practical10",
+              "label": "Practical 10",
+              "html": "new_syllabus/practical10/practical10.html",
+              "ipynb": "new_syllabus/practical10/practical10.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical11",
+          "title": "Practical 11",
+          "notebooks": [
+            {
+              "name": "practical11",
+              "label": "Practical 11",
+              "html": "new_syllabus/practical11/practical11.html",
+              "ipynb": "new_syllabus/practical11/practical11.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical2",
+          "title": "Practical 2",
+          "notebooks": [
+            {
+              "name": "practical2",
+              "label": "Practical 2",
+              "html": "new_syllabus/practical2/practical2.html",
+              "ipynb": "new_syllabus/practical2/practical2.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical3",
+          "title": "Practical 3",
+          "notebooks": [
+            {
+              "name": "practical3",
+              "label": "Practical 3",
+              "html": "new_syllabus/practical3/practical3.html",
+              "ipynb": "new_syllabus/practical3/practical3.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical4",
+          "title": "Practical 4",
+          "notebooks": [
+            {
+              "name": "practical4",
+              "label": "Practical 4",
+              "html": "new_syllabus/practical4/practical4.html",
+              "ipynb": "new_syllabus/practical4/practical4.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical5",
+          "title": "Practical 5",
+          "notebooks": [
+            {
+              "name": "practical5",
+              "label": "Practical 5",
+              "html": "new_syllabus/practical5/practical5.html",
+              "ipynb": "new_syllabus/practical5/practical5.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical6",
+          "title": "Practical 6",
+          "notebooks": [
+            {
+              "name": "practical6",
+              "label": "Practical 6",
+              "html": "new_syllabus/practical6/practical6.html",
+              "ipynb": "new_syllabus/practical6/practical6.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical7",
+          "title": "Practical 7",
+          "notebooks": [
+            {
+              "name": "practical7",
+              "label": "Practical 7",
+              "html": "new_syllabus/practical7/practical7.html",
+              "ipynb": "new_syllabus/practical7/practical7.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical8",
+          "title": "Practical 8",
+          "notebooks": [
+            {
+              "name": "practical8",
+              "label": "Practical 8",
+              "html": "new_syllabus/practical8/practical8.html",
+              "ipynb": "new_syllabus/practical8/practical8.ipynb"
+            }
+          ],
+          "count": 1
+        },
+        {
+          "id": "practical9",
+          "title": "Practical 9",
+          "notebooks": [
+            {
+              "name": "practical9",
+              "label": "Practical 9",
+              "html": "new_syllabus/practical9/practical9.html",
+              "ipynb": "new_syllabus/practical9/practical9.ipynb"
+            }
+          ],
+          "count": 1
+        }
+      ]
+    },
+    "old_syllabus": {
+      "title": "Old Syllabus",
+      "description": "Previous curriculum practicals and PDFs",
+      "practicals": [
+        {
+          "id": "practical1",
+          "title": "Practical 1",
+          "notebooks": [
+            {
+              "name": "practical11",
+              "label": "Practical 11",
+              "html": "old_syllabus/practical1/practical11.html",
+              "ipynb": "old_syllabus/practical1/practical11.ipynb"
+            },
+            {
+              "name": "practical12",
+              "label": "Practical 12",
+              "html": "old_syllabus/practical1/practical12.html",
+              "ipynb": "old_syllabus/practical1/practical12.ipynb"
+            }
+          ],
+          "count": 2
+        },
+        {
+          "id": "practical2",
+          "title": "Practical 2",
+          "notebooks": [
+            {
+              "name": "practical21",
+              "label": "Practical 21",
+              "html": "old_syllabus/practical2/practical21.html",
+              "ipynb": "old_syllabus/practical2/practical21.ipynb"
+            },
+            {
+              "name": "practical22",
+              "label": "Practical 22",
+              "html": "old_syllabus/practical2/practical22.html",
+              "ipynb": "old_syllabus/practical2/practical22.ipynb"
+            }
+          ],
+          "count": 2
+        },
+        {
+          "id": "practical3",
+          "title": "Practical 3",
+          "notebooks": [
+            {
+              "name": "practical31",
+              "label": "Practical 31",
+              "html": "old_syllabus/practical3/practical31.html",
+              "ipynb": "old_syllabus/practical3/practical31.ipynb"
+            },
+            {
+              "name": "practical32",
+              "label": "Practical 32",
+              "html": "old_syllabus/practical3/practical32.html",
+              "ipynb": "old_syllabus/practical3/practical32.ipynb"
+            }
+          ],
+          "count": 2
+        },
+        {
+          "id": "practical4",
+          "title": "Practical 4",
+          "notebooks": [
+            {
+              "name": "practical41",
+              "label": "Practical 41",
+              "html": "old_syllabus/practical4/practical41.html",
+              "ipynb": "old_syllabus/practical4/practical41.ipynb"
+            },
+            {
+              "name": "practical42",
+              "label": "Practical 42",
+              "html": "old_syllabus/practical4/practical42.html",
+              "ipynb": "old_syllabus/practical4/practical42.ipynb"
+            }
+          ],
+          "count": 2
+        },
+        {
+          "id": "practical5",
+          "title": "Practical 5",
+          "notebooks": [
+            {
+              "name": "practical51",
+              "label": "Practical 51",
+              "html": "old_syllabus/practical5/practical51.html",
+              "ipynb": "old_syllabus/practical5/practical51.ipynb"
+            },
+            {
+              "name": "practical52",
+              "label": "Practical 52",
+              "html": "old_syllabus/practical5/practical52.html",
+              "ipynb": "old_syllabus/practical5/practical52.ipynb"
+            }
+          ],
+          "count": 2
+        }
+      ]
+    }
+  },
+  "syllabus_md": "## Data Science & Machine Learning Curriculum\n\n### 1. Regression Analysis and Plot Interpretation\n\n* Implementation of Linear Regression models.\n* **Key Focus:** Interpreting Residual plots, Q-Q plots, and Scale-Location maps to validate model assumptions.\n\n### 2. Logistic Regression Analysis in R\n\n* Building binary classification models.\n* Analyzing odds ratios, confusion matrices, and ROC-AUC curves.\n\n### 3. Random Forest and Parameter Tuning in R\n\n* Ensemble learning using the `randomForest` or `ranger` packages.\n* **Hyperparameter Tuning:** Optimizing `mtry` and `ntree` using grid search or `caret`.\n\n### 4. Clustering Algorithms and Evaluation in R\n\n* Unsupervised learning via **K-Means** and **Hierarchical Clustering**.\n* **Evaluation:** Using the Elbow Method and Silhouette Scores to determine the optimal number of clusters.\n\n### 5. Machine Learning Project in Python: House Prices Data\n\n* End-to-end pipeline using the Ames or Boston Housing dataset.\n* **Process:** Feature engineering, handling missing values, and applying advanced regression techniques (e.g., Ridge, Lasso, or XGBoost).\n"
+}
